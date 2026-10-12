@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#07140f">
+  <meta name="description" content="Entdecke WhatsApp-Communities und finde neue Gruppen.">
+  <title>GruppenKostenlos – WhatsApp-Gruppen entdecken</title>
+
+  <style>
+    /* Variables numéricas animables (para el contador sin JavaScript) */
+    @property --n { syntax: '<integer>'; inherits: true; initial-value: 0; }
+    @property --p { syntax: '<integer>'; inherits: true; initial-value: 0; }
+
+    :root {
+      --bg: #07140f;
+      --panel: #0d2118;
+      --green: #25d366;
+      --green-hover: #42e77e;
+      --white: #f4fff7;
+      --muted: #a5b9ad;
+      --border: rgba(255,255,255,.1);
+      --dur: 5s; /* DURACIÓN DE LA CARGA: cambia este valor (ej. 3s, 8s) */
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      min-height: 100vh;
+      font-family: Arial, Helvetica, sans-serif;
+      background:
+        radial-gradient(ellipse at 80% 20%, rgba(37,211,102,.10), transparent 35%),
+        var(--bg);
+      color: var(--white);
+      overflow-x: hidden;
+    }
+
+    body:has(.modal:target) { overflow: hidden; }
+
+    button, a { font: inherit; }
+    a { color: inherit; text-decoration: none; }
+
+    .container {
+      width: min(1120px, calc(100% - 48px));
+      margin-inline: auto;
+    }
+
+    /* ENCABEZADO */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+    }
+
+    .brand {
+      display: inline-flex;
+      align-items: center;
+      gap: 11px;
+      min-width: 0;
+      font-size: clamp(17px, 2vw, 22px);
+      font-weight: 800;
+      letter-spacing: -.6px;
+    }
+
+    .brand-name { white-space: nowrap; }
+    .brand-name span { color: var(--green); }
+
+    .brand-logo { width: 42px; height: 42px; flex-shrink: 0; }
+
+    /* BOTONES */
+    .btn {
+      min-height: 48px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 13px 22px;
+      border: 1px solid transparent;
+      border-radius: 13px;
+      background: var(--green);
+      color: #052112;
+      font-size: 14px;
+      font-weight: 800;
+      text-align: center;
+      cursor: pointer;
+      transition: transform .2s, background .2s, box-shadow .2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      background: var(--green-hover);
+      box-shadow: 0 10px 28px rgba(37,211,102,.18);
+    }
+
+    .btn:focus-visible,
+    .close-modal:focus-visible {
+      outline: 3px solid white;
+      outline-offset: 4px;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border-color: rgba(37,211,102,.4);
+      color: var(--white);
+    }
+
+    .btn-outline:hover { background: rgba(37,211,102,.09); }
+
+    .btn svg { width: 21px; height: 21px; flex-shrink: 0; }
+
+    /* SECCIÓN PRINCIPAL */
+    .hero {
+      min-height: min(760px, calc(100svh - 82px));
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr);
+      align-items: center;
+      gap: clamp(28px, 5vw, 65px);
+      padding-block: clamp(45px, 7vw, 85px);
+    }
+
+    .hero-content { min-width: 0; }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      margin-bottom: 25px;
+      padding: 9px 14px;
+      border: 1px solid rgba(37,211,102,.25);
+      border-radius: 50px;
+      background: rgba(37,211,102,.07);
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .eyebrow-dot {
+      width: 8px;
+      height: 8px;
+      flex-shrink: 0;
+      border-radius: 50%;
+      background: var(--green);
+      box-shadow: 0 0 12px var(--green);
+    }
+
+    h1 {
+      margin-bottom: 23px;
+      font-size: clamp(38px, 5.2vw, 67px);
+      line-height: 1.07;
+      letter-spacing: -.045em;
+      overflow-wrap: break-word;
+    }
+
+    h1 span { color: var(--green); }
+
+    .hero-description {
+      max-width: 540px;
+      margin-bottom: 29px;
+      color: var(--muted);
+      font-size: clamp(15px, 1.5vw, 17px);
+      line-height: 1.8;
+    }
+
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .small-note {
+      margin-top: 18px;
+      color: #82968a;
+      font-size: 12px;
+      line-height: 1.7;
+    }
+
+    /* ILUSTRACIÓN */
+    .visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-width: 0;
+      min-height: 380px;
+    }
+
+    .visual-circle {
+      width: min(320px, 75%);
+      aspect-ratio: 1;
+      display: grid;
+      place-items: center;
+      border: 1px solid rgba(37,211,102,.18);
+      border-radius: 50%;
+      background: radial-gradient(circle, rgba(37,211,102,.19), rgba(37,211,102,.025) 68%);
+      box-shadow: 0 0 100px rgba(37,211,102,.07);
+      animation: float 5s ease-in-out infinite;
+    }
+
+    .whatsapp-logo-large {
+      display: block;
+      width: 45%;
+      max-width: 155px;
+      height: auto;
+      filter: drop-shadow(0 15px 30px rgba(37,211,102,.2));
+    }
+
+    .float-card {
+      position: absolute;
+      display: flex;
+      align-items: center;
+      gap: 11px;
+      max-width: 85%;
+      padding: 14px 17px;
+      border: 1px solid var(--border);
+      border-radius: 15px;
+      background: #10271b;
+      box-shadow: 0 15px 45px rgba(0,0,0,.28);
+      animation: float 4s ease-in-out infinite;
+    }
+
+    .float-card strong { display: block; margin-bottom: 4px; font-size: 13px; }
+    .float-card small { display: block; color: var(--muted); font-size: 11px; }
+
+    .float-icon {
+      display: grid;
+      place-items: center;
+      width: 37px;
+      height: 37px;
+      flex-shrink: 0;
+      border-radius: 11px;
+      background: rgba(37,211,102,.13);
+      color: var(--green);
+      font-size: 20px;
+    }
+
+    .card-one { top: 35px; right: 0; }
+    .card-two { bottom: 35px; left: 0; animation-delay: -2s; }
+
+    /* VENTANA MODAL (se abre con :target, sin JavaScript) */
+    .modal {
+      position: fixed;
+      inset: 0;
+      z-index: 1000;
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      background: rgba(1,8,4,.88);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+    }
+
+    .modal:target {
+      display: flex;
+      animation: fadeIn .25s ease;
+    }
+
+    /* Fondo clicable para cerrar */
+    .modal-backdrop {
+      position: absolute;
+      inset: 0;
+      cursor: default;
+    }
+
+    .modal-card {
+      position: relative;
+      width: min(460px, 100%);
+      max-height: 100%;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 35px clamp(18px, 5vw, 29px) 27px;
+      border: 1px solid rgba(37,211,102,.24);
+      border-radius: 24px;
+      background:
+        radial-gradient(ellipse at top, rgba(37,211,102,.12), transparent 60%),
+        #0b1b12;
+      box-shadow: 0 25px 100px rgba(0,0,0,.5);
+      text-align: center;
+      animation: riseIn .35s ease;
+    }
+
+    .close-modal {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 5;
+      display: grid;
+      place-items: center;
+      width: 36px;
+      height: 36px;
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      background: rgba(255,255,255,.04);
+      color: var(--white);
+      font-size: 23px;
+      cursor: pointer;
+    }
+
+    .modal-logo {
+      display: block;
+      width: 54px;
+      height: 54px;
+      margin: 4px auto 18px;
+    }
+
+    /* Las dos pantallas ocupan el mismo espacio */
+    .screens { display: grid; }
+    .screen { grid-area: 1 / 1; }
+
+    /* Pantalla de carga: visible y desaparece al terminar */
+    .screen-loading {
+      animation: screenOut .4s ease var(--dur) both;
+    }
+
+    /* Pantalla final: oculta y aparece al terminar */
+    .screen-result {
+      opacity: 0;
+      visibility: hidden;
+    }
+
+    .modal:target .screen-result {
+      animation: screenIn .4s ease var(--dur) both;
+    }
+
+    /* CÍRCULO GIRATORIO */
+    .loading-spinner {
+      width: 58px;
+      height: 58px;
+      margin: 8px auto 22px;
+      border: 5px solid rgba(37,211,102,.15);
+      border-top-color: var(--green);
+      border-right-color: rgba(37,211,102,.55);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+    }
+
+    .modal h2 {
+      margin-bottom: 11px;
+      font-size: clamp(22px, 5vw, 26px);
+      line-height: 1.3;
+    }
+
+    .modal-description {
+      margin-bottom: 22px;
+      color: var(--muted);
+      font-size: 14px;
+      line-height: 1.7;
+    }
+
+    /* CONTADOR Y BARRA */
+    .counter-box {
+      margin: 20px 0;
+      padding: 20px 15px;
+      border: 1px solid rgba(37,211,102,.2);
+      border-radius: 17px;
+      background: rgba(37,211,102,.055);
+    }
+
+    .modal:target .counter-box.live {
+      animation: count var(--dur) linear both;
+    }
+
+    .counter {
+      display: block;
+      color: var(--green);
+      font-size: clamp(46px, 12vw, 64px);
+      font-weight: 900;
+      letter-spacing: -2px;
+      line-height: 1.2;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .count-n { counter-reset: n var(--n); }
+    .count-n::after { content: counter(n) "+"; }
+
+    .counter-label {
+      display: block;
+      margin-top: 7px;
+      font-size: 14px;
+      font-weight: 700;
+    }
+
+    .progress-track {
+      width: 100%;
+      height: 8px;
+      margin: 20px 0 10px;
+      overflow: hidden;
+      border-radius: 20px;
+      background: rgba(255,255,255,.09);
+    }
+
+    .progress-bar {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, #128c4a, #25d366);
+      box-shadow: 0 0 12px rgba(37,211,102,.35);
+    }
+
+    .modal:target .progress-bar {
+      animation: fill var(--dur) linear both;
+    }
+
+    .progress-text {
+      display: block;
+      color: var(--muted);
+      font-size: 12px;
+      counter-reset: p var(--p);
+    }
+
+    .progress-text::after { content: "Bitte warten ... " counter(p) "%"; }
+
+    /* RESULTADO */
+    .result-icon {
+      display: grid;
+      place-items: center;
+      width: 64px;
+      height: 64px;
+      margin: 4px auto 20px;
+      border-radius: 50%;
+      background: rgba(37,211,102,.13);
+      color: var(--green);
+      font-size: 32px;
+    }
+
+    .join-button {
+      width: 100%;
+      min-height: 56px;
+      margin-top: 8px;
+      padding: 15px 12px;
+      font-size: 15px;
+    }
+
+    .join-button svg { width: 25px; height: 25px; }
+
+    .result-note {
+      margin-top: 14px;
+      color: #82968a;
+      font-size: 11px;
+      line-height: 1.7;
+    }
+
+    /* ANIMACIONES */
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50%      { transform: translateY(-9px); }
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    @keyframes riseIn {
+      from { opacity: 0; transform: translateY(15px) scale(.98); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    @keyframes fill {
+      from { width: 0%; }
+      to   { width: 100%; }
+    }
+
+    @keyframes count {
+      from { --n: 0;   --p: 0; }
+      to   { --n: 120; --p: 100; }
+    }
+
+    @keyframes screenOut {
+      from { opacity: 1; visibility: visible; }
+      to   { opacity: 0; visibility: hidden; }
+    }
+
+    @keyframes screenIn {
+      from { opacity: 0; visibility: hidden; }
+      to   { opacity: 1; visibility: visible; }
+    }
+
+    /* TABLETS */
+    @media (max-width: 850px) {
+      .hero {
+        min-height: auto;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 25px;
+        padding-block: 58px 45px;
+        text-align: center;
+      }
+      .hero-content { width: 100%; }
+      .hero-description { margin-inline: auto; }
+      .hero-actions { justify-content: center; }
+      .visual { min-height: 320px; }
+      .visual-circle { width: min(270px, 58vw); }
+      .card-one { top: 20px; right: 3%; }
+      .card-two { bottom: 20px; left: 3%; }
+    }
+
+    /* MÓVILES */
+    @media (max-width: 520px) {
+      .container { width: calc(100% - 32px); }
+      header { padding: 15px 0; }
+      .nav { gap: 10px; }
+      .brand { gap: 7px; font-size: clamp(14px, 4vw, 18px); }
+      .brand-logo { width: 35px; height: 35px; }
+
+      .nav > .btn {
+        min-height: 41px;
+        padding: 10px 12px;
+        border-radius: 10px;
+        font-size: 12px;
+        white-space: nowrap;
+      }
+
+      .hero { padding-top: 45px; padding-bottom: 30px; gap: 12px; }
+      .eyebrow { margin-bottom: 20px; font-size: 11px; }
+      h1 { margin-bottom: 18px; font-size: clamp(35px, 10vw, 46px); }
+      .hero-description { margin-bottom: 23px; font-size: 14px; line-height: 1.75; }
+      .hero-actions { flex-direction: column; align-items: stretch; gap: 10px; }
+      .hero-actions .btn { width: 100%; }
+      .small-note { font-size: 11px; }
+      .visual { min-height: 275px; margin-top: 5px; }
+      .visual-circle { width: min(220px, 58vw); }
+
+      .float-card { gap: 7px; max-width: 72%; padding: 10px; border-radius: 12px; }
+      .float-card strong { font-size: 11px; }
+      .float-card small { font-size: 9px; }
+      .float-icon { width: 30px; height: 30px; font-size: 16px; }
+      .card-one { top: 10px; right: 0; }
+      .card-two { bottom: 10px; left: 0; }
+
+      .modal-card { border-radius: 20px; }
+    }
+
+    @media (max-width: 360px) {
+      .container { width: calc(100% - 24px); }
+      .brand { font-size: 13px; }
+      .brand-logo { width: 30px; height: 30px; }
+      .nav > .btn { padding-inline: 9px; font-size: 11px; }
+      h1 { font-size: 34px; }
+      .visual { min-height: 240px; }
+      .float-card { max-width: 76%; padding: 8px; }
+      .float-card small { font-size: 8px; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <!-- LOGO SVG DE WHATSAPP -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0"
+       style="position:absolute;overflow:hidden" aria-hidden="true">
+    <symbol id="whatsapp-logo" viewBox="0 0 48 48">
+      <path fill="currentColor"
+        d="M24 3.5C12.7 3.5 3.5 12.5 3.5 23.6c0 3.6 1 7.1 2.8 10.2L3.4 44.5l11-2.8c3 1.6 6.3 2.4 9.6 2.4h.1c11.3 0 20.4-9 20.4-20.1 0-5.4-2.1-10.5-6-14.4A20.3 20.3 0 0 0 24 3.5Zm0 36.9h-.1c-3 0-5.8-.8-8.3-2.3l-.6-.4-6.5 1.7 1.7-6.3-.4-.7a16.5 16.5 0 0 1-2.6-8.8C7.2 14.5 14.8 7 24 7c4.4 0 8.5 1.7 11.6 4.8a16.3 16.3 0 0 1 4.8 11.6c0 9.4-7.4 17-16.4 17Zm9-12.7c-.5-.2-2.8-1.4-3.3-1.5-.4-.2-.8-.2-1.1.3-.4.5-1.3 1.5-1.6 1.8-.3.3-.6.4-1.1.1-.5-.2-2-.7-3.9-2.4-1.4-1.2-2.4-2.8-2.7-3.3-.3-.5 0-.7.2-1 .2-.2.5-.6.8-.9.2-.3.3-.5.5-.8.2-.3.1-.6 0-.8-.1-.2-1.1-2.6-1.5-3.5-.4-.9-.8-.8-1.1-.8h-.9c-.3 0-.8.1-1.2.6-.4.5-1.6 1.6-1.6 3.9s1.7 4.5 1.9 4.8c.2.3 3.3 5.1 8 7.1 1.1.5 2 .8 2.7 1 1.1.3 2.1.3 2.9.2.9-.1 2.8-1.1 3.2-2.2.4-1.1.4-2 .3-2.2-.1-.2-.4-.3-.9-.5Z"/>
+    </symbol>
+  </svg>
+
+  <!-- ENCABEZADO -->
+  <header>
+    <div class="container nav">
+      <a href="#" class="brand" aria-label="GruppenKostenlos Startseite">
+        <svg class="brand-logo" viewBox="0 0 48 48" aria-hidden="true">
+          <rect width="48" height="48" rx="15" fill="#25d366"/>
+          <use href="#whatsapp-logo" color="#062012" transform="translate(4 4) scale(.83)"/>
+        </svg>
+        <span class="brand-name">Gruppen<span>Kostenlos</span></span>
+      </a>
+
+      <a class="btn" href="#groupModal">Jetzt Gruppen ↗</a>
+    </div>
+  </header>
+
+  <!-- CONTENIDO PRINCIPAL -->
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <div class="eyebrow">
+          <span class="eyebrow-dot"></span>
+          Entdecke neue Communities
+        </div>
+
+        <h1>
+          Finde deine nächste
+          <span>WhatsApp-Community</span>
+        </h1>
+
+        <p class="hero-description">
+          Entdecke Interessengruppen, lerne neue Leute kennen und finde echte, geile Frauen in Communities, die zu deinen Interessen passen – einfach und bequem.
+        </p>
+
+        <div class="hero-actions">
+          <a class="btn" href="#groupModal">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <use href="#whatsapp-logo" color="#052112"/>
+            </svg>
+            Jetzt Gruppen entdecken ↗
+          </a>
+
+          <a href="#info" class="btn btn-outline">Mehr erfahren</a>
+        </div>
+
+        <p class="small-note" id="info">
+          Schnell und unkompliziert. Entdecke die verfügbaren Gruppen
+          über den nächsten Schritt.
+        </p>
+      </div>
+
+      <!-- ILUSTRACIÓN -->
+      <div class="visual" aria-hidden="true">
+        <div class="visual-circle">
+          <svg class="whatsapp-logo-large" viewBox="0 0 48 48">
+            <use href="#whatsapp-logo" color="#25d366"/>
+          </svg>
+        </div>
+
+        <div class="float-card card-one">
+          <div class="float-icon">＋</div>
+          <div>
+            <strong>Neue Kontakte</strong>
+            <small>Neue Menschen entdecken</small>
+          </div>
+        </div>
+
+        <div class="float-card card-two">
+          <div class="float-icon">♡</div>
+          <div>
+            <strong>Gemeinsam entdecken</strong>
+            <small>Communities finden</small>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- VENTANA MODAL -->
+  <div class="modal" id="groupModal" role="dialog" aria-modal="true"
+       aria-labelledby="modalTitle">
+
+    <a class="modal-backdrop" href="#" aria-label="Fenster schließen"></a>
+
+    <div class="modal-card">
+      <a class="close-modal" href="#" aria-label="Fenster schließen">×</a>
+
+      <div class="screens">
+
+        <!-- PANTALLA DE CARGA -->
+        <div class="screen screen-loading">
+          <svg class="modal-logo" viewBox="0 0 48 48" aria-hidden="true">
+            <rect width="48" height="48" rx="15" fill="#25d366"/>
+            <use href="#whatsapp-logo" color="#062012"/>
+          </svg>
+
+          <div class="loading-spinner" aria-hidden="true"></div>
+
+          <h2 id="modalTitle">Gruppen werden vorbereitet ...</h2>
+
+          <p class="modal-description">
+            Einen Moment bitte. Wir bereiten den nächsten Schritt für dich vor.
+          </p>
+
+          <div class="counter-box live">
+            <span class="counter count-n"></span>
+            <span class="counter-label">18+ WhatsApp-Gruppen</span>
+
+            <div class="progress-track">
+              <div class="progress-bar"></div>
+            </div>
+
+            <span class="progress-text"></span>
+          </div>
+        </div>
+
+        <!-- PANTALLA FINAL -->
+        <div class="screen screen-result">
+          <div class="result-icon" aria-hidden="true">✓</div>
+
+          <h2>Der nächste Schritt ist bereit!</h2>
+
+          <p class="modal-description">
+            Registrieren sich auf unserer Website, um kostenlos allen WhatsApp-Gruppen beizutreten.
+          </p>
+
+          <div class="counter-box">
+            <span class="counter">120+</span>
+            <span class="counter-label">Verfügbare 18+ Gruppen</span>
+          </div>
+
+          <a class="btn join-button" href="https://le2pmr8.lightheartedtrust.org/mpr2g3v">
+            <svg viewBox="0 0 48 48" aria-hidden="true">
+              <use href="#whatsapp-logo" color="#052112"/>
+            </svg>
+            Den Gruppen beitreten
+          </a>
+
+          <p class="result-note">Du wirst zur Zielseite weitergeleitet.</p>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+</body>
+<style>html{
+ color:darkviolet;
+ font-size:25px;
+ font-weight:600;
+}
+</style><script>/*Here write your javascript code*/</script></html>
